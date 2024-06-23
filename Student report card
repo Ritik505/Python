@@ -1,0 +1,17 @@
+name = input("Enter name of student:")
+eng = float(input("Enter marks in English: "))
+math = float(input("Enter marks in Math: "))
+sci = float(input("Enter marks in science: "))
+sst = float(input("Enter marks in sst: "))
+hindi = float(input("Enter marks in Hindi: "))
+total = eng + math + sci + sst + hindi
+per = total/5
+print("--------------------------------------")
+print("Report card for",name)
+print("--------------------------------------")
+print("Total marks scored",per,"%")
+if per >= 33:
+    print(" congratulation!!!")
+else:
+        print(" sorry,Better luck next time")
+        print("--------------------------------------")
