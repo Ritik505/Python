@@ -1,0 +1,19 @@
+import random
+
+num = random.randint(1,50)
+
+for i in range(5):
+    guess = int(input("Enter a number between 1 to 50: "))
+    if guess == num:
+        print("*" *20)
+        print("    YOU WIN")
+        print("*" *20)
+        break
+    elif num > guess:
+        print ("\nSorry,but the  number is greater than your guess\n")
+    elif num < guess:
+        print ("\nSorry,but the  number is lesser than your guess\n")
+else:
+    print("~" *20)
+    print("    YOU LOOSE")
+    print("`" *20)
