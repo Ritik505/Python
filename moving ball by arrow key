@@ -1,0 +1,42 @@
+import turtle
+import time
+import random
+
+def moveleft():
+    xb=ball.xcor()
+    ball.setx (xb -10)
+    
+def moveright():
+    xb = ball.xcor()
+    ball.setx (xb +10)
+    
+def moveup():
+    y = ball.ycor()
+    ball.sety(y +10)
+    
+def movedown():
+    y = ball.ycor()
+    ball.sety(y -10)
+    
+wn = turtle.Screen()
+wn.title("Bouncing Ball")
+wn.bgcolor("black")
+
+wn.setup(width=500,height=500)
+
+ball = turtle.Turtle()
+
+ball.color("white")
+ball.speed(0)
+ball.shape("circle")
+ball.shapesize(stretch_wid=5,stretch_len=5)
+ball.penup()
+
+wn.listen()
+wn.onkeypress(moveleft,"a")
+wn.onkeypress(moveright,"d")
+wn.onkeypress(moveup,"w")
+wn.onkeypress(movedown,"s")
+
+while True:
+    wn.update()
