@@ -1,0 +1,7 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+subjects = ["PCB","PCM","PCMB"]
+students = [46,78,14]
+plt.pie(students,colors=["blue","green","red"],labels=subjects)
+plt.title("science stream")
+plt.show()
