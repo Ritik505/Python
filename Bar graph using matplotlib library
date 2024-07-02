@@ -1,0 +1,8 @@
+import matplotlib.pyplot as dt
+a = ['TATA','BAJAJ','RELIANCE','AIRTEL']
+b = [99,76,62,86]
+dt.bar(a,b,color=('green','blue','orange','yellow'))
+dt.title("STOCK MARKET")
+dt.xlabel("COMPANIES")
+dt.ylabel("STOCKS")
+dt.show()
