@@ -1,0 +1,12 @@
+import matplotlib.pyplot as plt
+c1 =[2100,2000,1600,1200,1900]
+c2 =[1400,1900,2200,1800,2200]
+years =["2020","2021","2022","2023","2024"]
+plt.plot(years,c1,color = 'red',label='companyA')
+plt.plot(years,c2,color = 'green',label='companyB')
+plt.legend(loc ="upper right")
+plt.title("sale Records over 2020-2024")
+plt.xlabel("sale year")
+plt.ylabel("sales in Lakhs INR")
+plt.grid(True)
+plt.show()
