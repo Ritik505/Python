@@ -1,0 +1,12 @@
+for R in range(5):
+    userid =input("Enter the user Id: ")
+    passw =input("Enter the password: ")
+    
+    if userid.lower() =="rv.coder" and passw.lower() =="python":
+       print("password matched !!")
+       print("Access granted")
+       break
+    else:
+        print("Invalid user Id or password try again")
+else:
+    print("Access Denied")
