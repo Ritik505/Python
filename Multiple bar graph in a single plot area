@@ -1,0 +1,12 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+c1 = [2100,1200,1900,2000]
+c2 = [1400,1600,2200,1800]
+years = ["2020","2021","2022","2023"]
+df = pd.DataFrame({"Years":years,"companyA":c1,"companyB":c2})
+df.index=df["Years"]
+df.plot(kind = "bar",color=["green","brown","red","blue"])
+plt.title("Sale record over 2020-2023")
+plt.xlabel("sale year")
+plt.ylabel("sales in Lakhs INR")
+plt.show()
