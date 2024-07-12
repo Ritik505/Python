@@ -1,0 +1,77 @@
+name = input("Enter name of student:")
+subj = input(" name of subject:")
+marks1 = float(input(" marks obtained: "))
+if  marks1 >= 90:
+    print("Grade is A+")
+elif  marks1 >= 80:
+    print("Grade is A")
+elif  marks1 >= 60:
+    print("Grade is B")
+elif  marks1 >= 50:
+    print("Grade is C")
+else:
+    print("Grade is D")
+    
+subj = input(" name of subject:")
+marks2 = float(input(" marks obtained: "))
+if  marks2 >= 90:
+    print("Grade is A+")
+elif  marks2 >= 80:
+    print("Grade is A")
+elif  marks2 >= 60:
+    print("Grade is B")
+elif  marks2 >= 50:
+    print("Grade is C")
+else:
+    print("Grade is D")
+    
+subj = input(" name of subject:")
+marks3 = float(input(" marks obtained: "))
+if  marks3 >= 90:
+    print("Grade is A+")
+elif  marks3 >= 80:
+    print("Grade is A")
+elif  marks3 >= 60:
+    print("Grade is B")
+elif  marks3 >= 50:
+    print("Grade is C")
+else:
+    print("Grade is D")
+    
+subj = input(" name of subject: ")
+marks4 = float(input(" marks obtained: "))
+if  marks4 >= 90:
+    print("Grade is A+")
+elif  marks4 >= 80:
+    print("Grade is A")
+elif  marks4 >= 60:
+    print("Grade is B")
+elif  marks4 >= 50:
+    print("Grade is C")
+else:
+    print("Grade is D")
+    
+subj = input("name of subject:")
+marks5 = float(input(" marks obtained: "))
+if  marks5 >= 90:
+    print("Grade is A+")
+elif  marks5 >= 80:
+    print("Grade is A")
+elif  marks5 >= 60:
+    print("Grade is B")
+elif  marks5 >= 50:
+    print("Grade is C")
+else:
+    print("Grade is D")
+
+total = marks1 + marks2 + marks3 + marks4 +marks5
+per = total/5
+print("--------------------------------------")
+print("Report card for",name)
+print("--------------------------------------")
+print("Total percentage scored",per,"%")
+if per >= 33:
+    print(" congratulation!!!")
+else:
+        print(" sorry,Better luck next time")
+        print("--------------------------------------")
