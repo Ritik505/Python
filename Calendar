@@ -1,0 +1,3 @@
+import calendar as cal
+for c in range (1,13):
+    print(cal.month(2024,c))
