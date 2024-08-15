@@ -1,0 +1,14 @@
+A = eval(input("Enter a list1: "))
+B = eval(input("Enter a list2: "))
+
+U = A.copy()
+I = []
+for val in B:
+    if val in A:
+        I.append(val)
+    else:
+        U.append(val)
+print("1st Entered list =",A)
+print("2nd Entered list =",B)
+print("Union of a list =",U)
+print("Intersection of a list =",I)
