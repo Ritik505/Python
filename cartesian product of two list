@@ -1,0 +1,12 @@
+A = eval(input("Enter the elements of first list: "))
+B = eval(input("Enter the elements of second list: "))
+
+R = []
+for n1 in A:
+    for n2 in B:
+        R.append((n1,n2))
+print("\n1st enterd list =",A)
+print("\n2nd enterd list =",B)
+print("\n-------------------------------------------------------------------\n")
+print("\nCartesian product of 1st and 2nd list: ",R)
+print("\n-------------------------------------------------------------------\n")
