@@ -1,0 +1,7 @@
+A = eval(input("Enter the list elemets: "))
+n = int(input("Enter the number of positions to shift: "))
+print("\nEnterd list =",A)
+print("\n-----------------------------------------------")
+A = A[n:] +A[:n]
+print("\nList after rotate =",A)
+print("\n-----------------------------------------------")
