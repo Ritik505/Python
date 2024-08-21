@@ -1,0 +1,11 @@
+txt = input("Enter the string to be reversed: ")
+words = txt.split()
+words = words[::-1]
+print(words)
+res = ""
+for w in words:
+    res +=  w+" "
+print(res)
+
+res = " ".join(words)
+print(res)
