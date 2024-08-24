@@ -1,0 +1,8 @@
+x = int(input("Enter value of x: "))
+n = int(input("Enter value of n: "))
+s = 0
+f = 1
+for a in range(1,n+1):
+    f *= a
+    s += x**a/f
+print("sum of series of",x,"and",n,"is",s)
