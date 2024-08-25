@@ -1,0 +1,4 @@
+A = eval(input("Enter the list of values: "))
+m = max(A)
+res = max(A)
+print("\nHighest value in entered list",A,"is =",res)
