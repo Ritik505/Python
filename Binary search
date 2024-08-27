@@ -1,0 +1,16 @@
+A = eval(input("Enter the list of values:"))
+num = int(input("Enter the number to be searched:"))
+
+beg = 0
+end = len(A)-1
+while beg <= end:
+    mid = (beg+end)//2
+    if A[mid] == num:
+        print("\nFound at position",mid+1)
+        break
+    elif num>A[mid]:
+        beg = mid+1
+    elif num < A[mid]:
+        end = mid-1
+else:
+    print("\nNot found")
