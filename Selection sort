@@ -1,0 +1,10 @@
+a = eval(input("Enter the list of numbers: "))
+n = len(a)
+print("Before swap",a)
+for i in range(n-1):
+    for j in range(i+1,n):
+        if a[i] > a[j]:
+            temp = a[i]
+            a[i] = a[j]
+            a[j] = temp
+print("After swap",a)
