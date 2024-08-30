@@ -1,0 +1,10 @@
+A = eval(input("Enter the list of values: "))
+num = int(input("Enter the number to be searched: "))
+
+cnt = 0
+for i in range(len(A)):
+    if A[i] == num:
+        print("found at position",i+1)
+        cnt +=1
+if cnt == 0:
+    print("Number not found")
