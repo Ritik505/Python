@@ -1,0 +1,11 @@
+from statistics import mean, median, mode
+n = int(input("How many numbers do you want to enter: "))
+data = []
+
+for _ in range(n):
+    number = int(input("Enter a number: "))
+    data.append(number)
+
+print("mean:", mean(data))
+print("median:", median(data))
+print("mode:", mode(data))
