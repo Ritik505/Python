@@ -1,0 +1,8 @@
+from itertools import product
+
+n = int(input("Enter the number of options: "))
+options = ['H', 'T']
+combinations = product(options, repeat=n)
+
+for combo in combinations:
+    print(''.join(combo))
