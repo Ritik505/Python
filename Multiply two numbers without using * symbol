@@ -1,0 +1,6 @@
+A = int(input("Enter first number: "))
+B = int(input("Enter second number: "))
+result=0
+for i in range(B):
+    result += A
+print("product of",A,"and",B,"is",result)
