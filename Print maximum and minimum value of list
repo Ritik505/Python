@@ -9,15 +9,5 @@ for i in range(len(A)):
     elif A[i] < min:
         min = A[i]
 print("Min value is",min)
-print("Max value is",max)A = eval(input("Enter a list of values: "))
-
-min = A[0]
-max = A[0]
-
-for i in range(len(A)):
-    if A[i] > max:
-        max = A[i]
-    elif A[i] < min:
-        min = A[i]
-print("Min value is",min)
 print("Max value is",max)
+    
