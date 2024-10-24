@@ -1,0 +1,8 @@
+rv_string = "python"
+x=0
+for i in rv_string:
+    x=x+1
+    print(rv_string[0:x])
+for i in rv_string:
+    x=x-1
+    print(rv_string[0:x])
