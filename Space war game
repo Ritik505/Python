@@ -1,0 +1,148 @@
+import turtle
+import random
+import time
+
+turtle.setup(width=600, height=600)
+turtle.bgcolor("black")
+turtle.title("Space War")
+turtle.tracer(0)
+
+pen_lives = turtle.Turtle()
+pen_lives.hideturtle()
+pen_lives.color("white")
+pen_lives.penup()
+pen_lives.goto(-200, 260)
+
+pen_score = turtle.Turtle()
+pen_score.hideturtle()
+pen_score.color("white")
+pen_score.penup()
+pen_score.goto(200, 260)
+
+class Sprite(turtle.Turtle):
+    def __init__(self, spriteshape, color, startx, starty):
+        super().__init__(shape=spriteshape)
+        self.penup()
+        self.color(color)
+        self.goto(startx, starty)
+        self.move_speed = 0.5
+
+    def move(self):
+        self.fd(self.move_speed)
+        if self.xcor() > 290:
+            self.setx(-290)
+        elif self.xcor() < -290:
+            self.setx(290)
+        if self.ycor() > 290:
+            self.sety(-290)
+        elif self.ycor() < -290:
+            self.sety(290)
+
+    def is_collision(self, other):
+        return self.distance(other) < 20
+
+class Player(Sprite):
+    def __init__(self, spriteshape, color, startx, starty):
+        super().__init__(spriteshape, color, startx, starty)
+        self.shapesize(stretch_wid=0.6, stretch_len=1.1)
+        self.move_speed = 2
+        self.lives = 3
+
+    def turn_left(self):
+        self.lt(45)
+
+    def turn_right(self):
+        self.rt(45)
+
+    def accelerate(self):
+        self.move_speed += 0.5
+
+    def decelerate(self):
+        if self.move_speed > 0.5:
+            self.move_speed -= 0.5
+
+class Bullet(Sprite):
+    def __init__(self, color):
+        super().__init__("square", color, 0, 0)
+        self.shapesize(stretch_wid=0.2, stretch_len=0.4)
+        self.move_speed = 10
+        self.hideturtle()
+        self.active = False
+
+    def fire(self, x, y, heading):
+        if not self.active:
+            self.goto(x, y)
+            self.setheading(heading)
+            self.showturtle()
+            self.active = True
+
+    def move(self):
+        if self.active:
+            self.fd(self.move_speed)
+            if abs(self.xcor()) > 290 or abs(self.ycor()) > 290:
+                self.hideturtle()
+                self.active = False
+
+class Enemy(Sprite):
+    def __init__(self, spriteshape, color, startx, starty):
+        super().__init__(spriteshape, color, startx, starty)
+        self.move_speed = random.uniform(1, 3)
+        self.setheading(random.randint(0, 360))
+
+    def move(self):
+        super().move()
+
+player = Player("triangle", "white", 0, 0)
+enemies = [Enemy("circle", "red", random.randint(-290, 290), random.randint(-290, 290)) for _ in range(5)]
+bullet = Bullet("yellow")
+score = 0
+
+turtle.listen()
+turtle.onkeypress(player.turn_left, "a")
+turtle.onkeypress(player.turn_right, "d")
+turtle.onkeypress(player.accelerate, "w")
+turtle.onkeypress(player.decelerate, "s")
+turtle.onkeypress(lambda: bullet.fire(player.xcor(), player.ycor(), player.heading()), "space")
+
+def update_lives():
+    pen_lives.clear()
+    pen_lives.write(f"Lives: {player.lives}", align="center", font=("Arial", 24, "normal"))
+
+def update_score():
+    pen_score.clear()
+    pen_score.write(f"Score: {score}", align="center", font=("Arial", 24, "normal"))
+
+update_lives()
+update_score()
+
+while True:
+    turtle.update()
+    player.move()
+    bullet.move()
+    
+    for enemy in enemies:
+        enemy.move()
+        if player.is_collision(enemy):
+            player.lives -= 1
+            update_lives()
+            enemy.goto(random.randint(-290, 290), random.randint(-290, 290))
+            pen_lives.goto(0, 0)
+            pen_lives.write("Collision!", align="center", font=("Arial", 24, "normal"))
+            turtle.update()
+            time.sleep(1)
+            pen_lives.clear()
+            update_lives()
+        
+        if bullet.active and bullet.is_collision(enemy):
+            bullet.hideturtle()
+            bullet.active = False
+            enemy.goto(random.randint(-290, 290), random.randint(-290, 290))
+            score += 1
+            update_score()
+
+    if player.lives <= 0:
+        pen_lives.goto(0, 0)
+        pen_lives.write("Game Over!", align="center", font=("Arial", 24, "normal"))
+        break
+
+    time.sleep(0.05)
