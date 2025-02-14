@@ -1,0 +1,660 @@
+import pygame
+import random
+import math
+import os
+
+pygame.init()
+pygame.mixer.init()
+
+WINDOW_WIDTH = 800
+WINDOW_HEIGHT = 800
+ROAD_WIDTH = 400  
+LANE_WIDTH = ROAD_WIDTH // 3  
+screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+pygame.display.set_caption("Realistic Racing Game")
+
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+GRAY = (128, 128, 128)
+YELLOW = (255, 255, 0)
+DARK_GRAY = (64, 64, 64)
+GREEN = (34, 177, 76) 
+
+
+GAME_SPEED = 7
+SPAWN_INTERVAL = 1000
+DIFFICULTY_INCREASE_RATE = 0.1
+
+try:
+    ROAD_IMG = pygame.image.load('road.png').convert()
+    ROAD_IMG = pygame.transform.scale(ROAD_IMG, (WINDOW_WIDTH, WINDOW_HEIGHT))
+except:
+    ROAD_IMG = None
+
+try:
+    CRASH_SOUND = pygame.mixer.Sound('crash.wav')
+    ENGINE_SOUND = pygame.mixer.Sound('engine.wav')
+    SCORE_SOUND = pygame.mixer.Sound('score.wav')
+    DRIFT_SOUND = pygame.mixer.Sound('drift.wav')  
+except:
+    CRASH_SOUND = None
+    ENGINE_SOUND = None
+    SCORE_SOUND = None
+    DRIFT_SOUND = None
+
+ENEMY_COLORS = [
+    (170, 0, 0),     
+    (0, 100, 0),     
+    (0, 0, 170),     
+    (200, 110, 0),   
+    (192, 192, 192), 
+    (212, 175, 55),  
+    (66, 66, 66),    
+    (184, 115, 51)   
+]
+
+
+BIKE_COLORS = [
+    (255, 0, 0),    
+    (0, 0, 255),    
+    (0, 0, 0),      
+    (255, 165, 0),  
+]
+
+TRUCK_COLORS = [
+    (50, 50, 150),   
+    (150, 50, 50),   
+    (50, 100, 50),   
+    (80, 80, 80),    
+]
+
+
+DIRECTIONS = {
+    'STRAIGHT': 0,
+    'LEFT_CURVE': 1,
+    'RIGHT_CURVE': 2,
+    'SPLIT': 3
+}
+
+class GameTrack:
+    def __init__(self):
+        self.current_direction = DIRECTIONS['STRAIGHT']
+        self.direction_timer = 0
+        self.direction_duration = 300  
+        self.curve_offset = 0
+        self.split_active = False
+        
+    def update(self):
+        self.direction_timer += 1
+        if self.direction_timer >= self.direction_duration:
+            self.direction_timer = 0
+            
+            self.current_direction = random.choice(list(DIRECTIONS.values()))
+            if self.current_direction == DIRECTIONS['SPLIT']:
+                self.split_active = True
+            else:
+                self.split_active = False
+        
+        
+        if self.current_direction == DIRECTIONS['LEFT_CURVE']:
+            self.curve_offset = math.sin(self.direction_timer * 0.01) * 100
+        elif self.current_direction == DIRECTIONS['RIGHT_CURVE']:
+            self.curve_offset = -math.sin(self.direction_timer * 0.01) * 100
+        else:
+            self.curve_offset = 0
+
+class ParticleEffect:
+    def __init__(self, x, y, color):
+        self.x = x
+        self.y = y
+        self.color = color
+        self.size = random.randint(2, 5)
+        self.lifetime = 20
+        self.dx = random.uniform(-2, 2)
+        self.dy = random.uniform(-2, 2)
+
+    def update(self):
+        self.x += self.dx
+        self.y += self.dy
+        self.lifetime -= 1
+        self.size = max(0, self.size - 0.1)
+
+    def draw(self, surface):
+        alpha = int((self.lifetime / 20) * 255)
+        particle_surface = pygame.Surface((self.size * 2, self.size * 2), pygame.SRCALPHA)
+        pygame.draw.circle(particle_surface, (*self.color, alpha), 
+                         (self.size, self.size), self.size)
+        surface.blit(particle_surface, (self.x - self.size, self.y - self.size))
+
+class PlayerCar:
+    def __init__(self):
+        self.width = 50
+        self.height = 80
+        self.x = (WINDOW_WIDTH - ROAD_WIDTH) // 2 + (ROAD_WIDTH // 2) - self.width // 2
+        self.y = WINDOW_HEIGHT - 150
+        self.speed = GAME_SPEED
+        self.lateral_speed = 0
+        self.max_lateral_speed = 8
+        self.acceleration = 0.5
+        self.deceleration = 0.2
+        self.tilt = 0
+        self.boost = 50
+        self.boost_regen = 0.1
+        self.particles = []
+        self.drift_particles = []
+        self.is_drifting = False
+        
+    def move(self, keys):
+        
+        if keys[pygame.K_SPACE] and self.boost > 0:
+            self.max_lateral_speed = 10
+            self.boost = max(0, self.boost - 1.5)
+            
+            self.particles.append(ParticleEffect(
+                self.x + self.width//2,
+                self.y + self.height,
+                (255, 165, 0)
+            ))
+        else:
+            self.max_lateral_speed = 8
+            self.boost = min(50, self.boost + self.boost_regen)
+
+       
+        if keys[pygame.K_a]: 
+            self.lateral_speed = max(self.lateral_speed - self.acceleration, -self.max_lateral_speed)
+            self.tilt = min(self.tilt + 2, 15)
+            if abs(self.lateral_speed) > 6:
+                self.is_drifting = True
+        elif keys[pygame.K_d]:  
+            self.lateral_speed = min(self.lateral_speed + self.acceleration, self.max_lateral_speed)
+            self.tilt = max(self.tilt - 2, -15)
+            if abs(self.lateral_speed) > 6:
+                self.is_drifting = True
+        else:
+            self.lateral_speed *= 0.9
+            self.tilt *= 0.8
+            self.is_drifting = False
+
+        self.x += self.lateral_speed
+        
+        if self.is_drifting:
+            if DRIFT_SOUND:
+                DRIFT_SOUND.play()
+            for _ in range(2):
+                self.drift_particles.append(ParticleEffect(
+                    self.x + random.randint(0, self.width),
+                    self.y + self.height - 10,
+                    (100, 100, 100)
+                ))
+
+        for particle in self.particles[:]:
+            particle.update()
+            if particle.lifetime <= 0:
+                self.particles.remove(particle)
+                
+        for particle in self.drift_particles[:]:
+            particle.update()
+            if particle.lifetime <= 0:
+                self.drift_particles.remove(particle)
+        road_left = (WINDOW_WIDTH - ROAD_WIDTH) // 2
+        road_right = road_left + ROAD_WIDTH
+        if self.x < road_left:
+            self.x = road_left
+            self.lateral_speed *= -0.5
+        elif self.x > road_right - self.width:
+            self.x = road_right - self.width
+            self.lateral_speed *= -0.5
+
+    def draw(self, surface):
+       
+        for particle in self.particles:
+            particle.draw(surface)
+        for particle in self.drift_particles:
+            particle.draw(surface)
+
+        car_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        
+       
+        shadow_offset = 5
+        pygame.draw.rect(surface, (0, 0, 0, 64), 
+                        (self.x + shadow_offset, self.y + shadow_offset, 
+                         self.width, self.height), border_radius=10)
+        
+     
+        for i in range(self.height):
+            color_val = max(180, 255 - i)
+            pygame.draw.rect(car_surface, (color_val, 0, 0), 
+                           (5, i, self.width-10, 1), border_radius=5)
+        
+        
+        for i in range(20):
+            alpha = 128 + i * 3
+            pygame.draw.rect(car_surface, (50, 50, 50, alpha), 
+                           (8, 15 + i, self.width-16, 1))
+        
+        
+        for light_pos in [(5, 5), (self.width-15, 5)]:
+            
+            pygame.draw.ellipse(car_surface, (255, 255, 200), (*light_pos, 10, 10))
+            
+            glow_surface = pygame.Surface((20, 20), pygame.SRCALPHA)
+            pygame.draw.ellipse(glow_surface, (255, 255, 200, 128), (0, 0, 20, 20))
+            car_surface.blit(glow_surface, (light_pos[0]-5, light_pos[1]-5))
+        
+        
+        wheel_color = (30, 30, 30)
+        wheel_positions = [(0, 10), (self.width-8, 10), 
+                         (0, self.height-30), (self.width-8, self.height-30)]
+        
+        for wx, wy in wheel_positions:
+            pygame.draw.rect(car_surface, wheel_color, (wx, wy, 8, 20), border_radius=4)
+            
+            pygame.draw.rect(car_surface, (100, 100, 100), (wx+2, wy+8, 4, 4))
+        
+       
+        rotated = pygame.transform.rotate(car_surface, self.tilt)
+        new_rect = rotated.get_rect(center=(self.x + self.width/2, self.y + self.height/2))
+        surface.blit(rotated, new_rect.topleft)
+
+        
+        boost_width = 100
+        boost_height = 10
+        boost_x = 10
+        boost_y = 40
+        pygame.draw.rect(surface, (100, 100, 100), 
+                        (boost_x, boost_y, boost_width, boost_height))
+        pygame.draw.rect(surface, (0, 255, 255), 
+                        (boost_x, boost_y, self.boost, boost_height))
+    
+    def get_rect(self):
+        return pygame.Rect(self.x, self.y, self.width, self.height)
+
+class EnemyCar:
+    def __init__(self):
+        self.width = 50
+        self.height = 80
+        self.lane = random.randint(0, 2)
+        road_left = (WINDOW_WIDTH - ROAD_WIDTH) // 2
+        self.x = road_left + (LANE_WIDTH * self.lane) + (LANE_WIDTH // 2) - self.width // 2
+        self.y = -self.height
+        self.speed = random.uniform(8, 15)
+        self.color = random.choice(ENEMY_COLORS)
+        self.wobble = random.uniform(-1, 1)
+        self.target_x = self.x
+        
+    def move(self, player_x=None):
+        self.y += self.speed
+        
+        
+        self.x += math.sin(self.y * 0.05) * self.wobble
+        
+       
+        if random.random() < 0.02 and player_x:  
+            if self.x < player_x:
+                self.x += 2
+            else:
+                self.x -= 2
+
+    def draw(self, surface):
+        
+        shadow_offset = 5
+        pygame.draw.rect(surface, (0, 0, 0, 64), 
+                        (self.x + shadow_offset, self.y + shadow_offset, 
+                         self.width, self.height), border_radius=10)
+        
+       
+        for i in range(self.height):
+            color_val = max(min(self.color[0], self.color[1], self.color[2]) - 30,
+                          (255 - i) // 2)
+            pygame.draw.rect(surface, (
+                min(self.color[0], color_val),
+                min(self.color[1], color_val),
+                min(self.color[2], color_val)
+            ), (self.x + 5, self.y + i, self.width-10, 1), border_radius=5)
+        
+        
+        pygame.draw.rect(surface, (30, 30, 30), 
+                        (self.x + 10, self.y + self.height - 45, 
+                         self.width - 20, 25), border_radius=5)
+        
+       
+        if self.y > 0: 
+            pygame.draw.rect(surface, (255, 0, 0), 
+                           (self.x + 5, self.y + self.height - 8, 10, 5))
+            pygame.draw.rect(surface, (255, 0, 0), 
+                           (self.x + self.width - 15, self.y + self.height - 8, 10, 5))
+    
+    def get_rect(self):
+        return pygame.Rect(self.x, self.y, self.width, self.height)
+
+class Bike:
+    def __init__(self):
+        self.width = 30
+        self.height = 60
+        self.lane = random.randint(0, 2)
+        road_left = (WINDOW_WIDTH - ROAD_WIDTH) // 2
+        self.x = road_left + (LANE_WIDTH * self.lane) + (LANE_WIDTH // 2) - self.width // 2
+        self.y = -self.height
+        self.speed = random.uniform(10, 16)
+        self.color = random.choice(BIKE_COLORS)
+        self.tilt = random.uniform(-5, 5)
+        self.wheel_rotation = 0
+        self.rider_bounce = 0
+        
+    def move(self):
+        self.y += self.speed
+        self.x += math.sin(self.y * 0.08) * 2.5
+        # Update animations
+        self.wheel_rotation = (self.wheel_rotation + self.speed * 2) % 360
+        self.rider_bounce = math.sin(self.y * 0.1) * 2
+        
+    def draw(self, surface):
+        bike_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        
+        
+        shadow_offset = 3
+        for i in range(3):
+            alpha = 64 - i * 20
+            pygame.draw.ellipse(surface, (0, 0, 0, alpha),
+                              (self.x + shadow_offset + i,
+                               self.y + shadow_offset + i,
+                               self.width, self.height))
+        
+        
+        wheel_y = self.height - 15
+        pygame.draw.circle(bike_surface, (30, 30, 30),
+                         (self.width//2, wheel_y), 8)
+        
+        for spoke in range(4):
+            angle = math.radians(spoke * 45 + self.wheel_rotation)
+            spoke_end_x = self.width//2 + math.cos(angle) * 6
+            spoke_end_y = wheel_y + math.sin(angle) * 6
+            pygame.draw.line(bike_surface, (80, 80, 80),
+                           (self.width//2, wheel_y),
+                           (spoke_end_x, spoke_end_y), 2)
+        
+        
+        wheel_y = 15
+        pygame.draw.circle(bike_surface, (30, 30, 30),
+                         (self.width//2, wheel_y), 8)
+        
+        for spoke in range(4):
+            angle = math.radians(spoke * 45 + self.wheel_rotation)
+            spoke_end_x = self.width//2 + math.cos(angle) * 6
+            spoke_end_y = wheel_y + math.sin(angle) * 6
+            pygame.draw.line(bike_surface, (80, 80, 80),
+                           (self.width//2, wheel_y),
+                           (spoke_end_x, spoke_end_y), 2)
+        
+        
+        pygame.draw.line(bike_surface, self.color,
+                        (self.width//2, wheel_y),
+                        (self.width//2, wheel_y + 30), 4)
+        
+        pygame.draw.line(bike_surface, self.color,
+                        (self.width//2 - 8, wheel_y + 5),
+                        (self.width//2 + 8, wheel_y + 5), 3)
+        
+        pygame.draw.rect(bike_surface, (40, 40, 40),
+                        (self.width//2 - 5, wheel_y + 25, 10, 4))
+        
+       
+        rider_y_offset = self.rider_bounce
+        
+        pygame.draw.ellipse(bike_surface, (50, 50, 50),
+                          (self.width//2 - 8, wheel_y + 15 + rider_y_offset,
+                           16, 25))
+        
+        pygame.draw.circle(bike_surface, (50, 50, 50),
+                         (self.width//2, wheel_y + 10 + rider_y_offset), 8)
+        
+        pygame.draw.line(bike_surface, (50, 50, 50),
+                        (self.width//2, wheel_y + 20 + rider_y_offset),
+                        (self.width//2 - 8, wheel_y + 5), 3)
+        pygame.draw.line(bike_surface, (50, 50, 50),
+                        (self.width//2, wheel_y + 20 + rider_y_offset),
+                        (self.width//2 + 8, wheel_y + 5), 3)
+        
+        if self.speed > 10:
+            blur_surface = bike_surface.copy()
+            blur_surface.set_alpha(100)
+            bike_surface.blit(blur_surface, (-2, 0))
+        
+        
+        lean_angle = self.tilt + math.sin(self.y * 0.05) * 3
+        rotated = pygame.transform.rotate(bike_surface, lean_angle)
+        new_rect = rotated.get_rect(center=(self.x + self.width/2,
+                                          self.y + self.height/2))
+        surface.blit(rotated, new_rect.topleft)
+        
+       
+        if self.speed > 10:
+            for _ in range(3):
+                line_x = random.randint(int(self.x), int(self.x + self.width))
+                line_y = random.randint(int(self.y), int(self.y + self.height))
+                line_length = random.randint(10, 20)
+                pygame.draw.line(surface, (255, 255, 255, 128),
+                               (line_x, line_y),
+                               (line_x, line_y + line_length), 1)
+    
+    def get_rect(self):
+        return pygame.Rect(self.x, self.y, self.width, self.height)
+
+class Truck:
+    def __init__(self):
+        self.width = 80
+        self.height = 120
+        self.lane = random.randint(0, 2)
+        road_left = (WINDOW_WIDTH - ROAD_WIDTH) // 2
+        self.x = road_left + (LANE_WIDTH * self.lane) + (LANE_WIDTH // 2) - self.width // 2
+        self.y = -self.height
+        self.speed = random.uniform(5, 9)
+        self.color = random.choice(TRUCK_COLORS)
+        
+    def move(self):
+        self.y += self.speed
+      
+        self.x += math.sin(self.y * 0.02) * 0.5
+        
+    def draw(self, surface):
+      
+        shadow_offset = 8
+        pygame.draw.rect(surface, (0, 0, 0, 64),
+                        (self.x + shadow_offset, self.y + shadow_offset,
+                         self.width, self.height), border_radius=10)
+        
+        
+        pygame.draw.rect(surface, self.color,
+                        (self.x, self.y, self.width, self.height//3),
+                        border_radius=8)
+        
+        
+        pygame.draw.rect(surface, (50, 50, 50),
+                        (self.x + 10, self.y + 5,
+                         self.width - 20, self.height//4))
+        
+        pygame.draw.rect(surface, self.color,
+                        (self.x + 5, self.y + self.height//3,
+                         self.width - 10, self.height * 2//3),
+                        border_radius=5)
+        
+        wheel_positions = [
+            (0, self.height//4),
+            (self.width-12, self.height//4),
+            (0, self.height-35),
+            (self.width-12, self.height-35)
+        ]
+        for wx, wy in wheel_positions:
+            pygame.draw.rect(surface, (30, 30, 30),
+                           (self.x + wx, self.y + wy, 12, 25),
+                           border_radius=4)
+        pygame.draw.rect(surface, (255, 255, 200),
+                        (self.x + 5, self.y + self.height//3 - 8, 10, 5))
+        pygame.draw.rect(surface, (255, 255, 200),
+                        (self.x + self.width - 15, self.y + self.height//3 - 8, 10, 5))
+    
+    def get_rect(self):
+        return pygame.Rect(self.x, self.y, self.width, self.height)
+
+def draw_road(surface, scroll):
+    
+    surface.fill(GREEN)
+    
+    
+    road_left = (WINDOW_WIDTH - ROAD_WIDTH) // 2
+    
+    
+    pygame.draw.rect(surface, DARK_GRAY, 
+                    (road_left, 0, ROAD_WIDTH, WINDOW_HEIGHT))
+    
+    lane_width = ROAD_WIDTH // 3
+    for x in range(road_left + lane_width, road_left + ROAD_WIDTH, lane_width):
+        for y in range((-scroll % 80), WINDOW_HEIGHT, 80):
+            pygame.draw.rect(surface, YELLOW, 
+                           (x - 5, y, 10, 40))
+
+game_track = GameTrack()
+player = PlayerCar()
+enemy_cars = []
+clock = pygame.time.Clock()
+running = True
+score = 0
+game_over = False
+scroll = 0
+font = pygame.font.Font(None, 48)
+high_score = 0
+
+if ENGINE_SOUND:
+    ENGINE_SOUND.play(-1)
+
+SPAWN_ENEMY = pygame.USEREVENT + 1
+pygame.time.set_timer(SPAWN_ENEMY, SPAWN_INTERVAL)
+
+
+spawn_choices = ['car', 'bike', 'truck']
+spawn_weights = [0.5, 0.3, 0.2]  
+
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == SPAWN_ENEMY and not game_over:
+            vehicle_type = random.choices(spawn_choices, spawn_weights)[0]
+            if vehicle_type == 'car':
+                enemy_cars.append(EnemyCar())
+            elif vehicle_type == 'bike':
+                enemy_cars.append(Bike())
+            else:
+                enemy_cars.append(Truck())
+        if event.type == pygame.KEYDOWN and game_over:
+            if event.key == pygame.K_SPACE:
+                # Reset game
+                player = PlayerCar()
+                enemy_cars = []
+                score = 0
+                game_over = False
+                if ENGINE_SOUND:
+                    ENGINE_SOUND.play(-1)
+    
+    if not game_over:
+        scroll = (scroll + GAME_SPEED) % WINDOW_HEIGHT
+        
+        keys = pygame.key.get_pressed()
+        player.move(keys)
+        
+
+        for enemy in enemy_cars[:]:
+            if isinstance(enemy, EnemyCar):
+                enemy.move(player.x)
+            else:
+                enemy.move()
+                
+            
+            if enemy.get_rect().colliderect(player.get_rect()):
+                game_over = True
+                if CRASH_SOUND:
+                    CRASH_SOUND.play()
+                if ENGINE_SOUND:
+                    ENGINE_SOUND.stop()
+                break
+            
+            for other_enemy in enemy_cars:
+                if enemy != other_enemy and enemy.get_rect().colliderect(other_enemy.get_rect()):
+                    
+                    for _ in range(10):
+                        particle = ParticleEffect(
+                            enemy.x + enemy.width/2,
+                            enemy.y + enemy.height/2,
+                            (255, 0, 0)
+                        )
+                        player.particles.append(particle)
+                    
+                    
+                    if enemy in enemy_cars:
+                        enemy_cars.remove(enemy)
+                    if other_enemy in enemy_cars:
+                        enemy_cars.remove(other_enemy)
+                    score += 2
+                    break
+
+        
+        if score > 20 and random.random() < 0.1:  
+            vehicle_type = random.choices(spawn_choices, spawn_weights)[0]
+            if vehicle_type == 'car':
+                enemy_cars.append(EnemyCar())
+            elif vehicle_type == 'bike':
+                enemy_cars.append(Bike())
+            else:
+                enemy_cars.append(Truck())
+
+    screen.fill(BLACK)
+    draw_road(screen, scroll)
+    
+    for enemy in enemy_cars:
+        enemy.draw(screen)
+    
+    player.draw(screen)
+    
+   
+    score_text = font.render(f"Score: {score}", True, BLACK)
+    screen.blit(score_text, (12, 12))
+    score_text = font.render(f"Score: {score}", True, WHITE)
+    screen.blit(score_text, (10, 10))
+    
+    if game_over:
+        overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+        overlay.fill((0, 0, 0))
+        overlay.set_alpha(128)
+        screen.blit(overlay, (0, 0))
+        
+        game_over_text = font.render("Game Over!", True, RED)
+        restart_text = font.render("Press SPACE to restart", True, WHITE)
+        screen.blit(game_over_text, 
+                   (WINDOW_WIDTH//2 - game_over_text.get_width()//2, 
+                    WINDOW_HEIGHT//2 - game_over_text.get_height()//2))
+        screen.blit(restart_text, 
+                   (WINDOW_WIDTH//2 - restart_text.get_width()//2, 
+                    WINDOW_HEIGHT//2 + 50))
+    
+    if not game_over:
+        controls_text = font.render("Use A and D to move", True, WHITE)
+        screen.blit(controls_text, (10, WINDOW_HEIGHT - 40))
+    
+    high_score = max(high_score, score)
+    
+    high_score_text = font.render(f"High Score: {high_score}", True, WHITE)
+    screen.blit(high_score_text, (10, 50))
+    
+    if not game_over:
+        boost_text = font.render("SPACE for boost", True, WHITE)
+        screen.blit(boost_text, (10, WINDOW_HEIGHT - 80))
+    
+    if not game_over:
+        current_speed = GAME_SPEED + (score * DIFFICULTY_INCREASE_RATE)
+        difficulty_text = font.render(f"Speed: {int(current_speed)}", True, WHITE)
+        screen.blit(difficulty_text, (10, 90))
+    
+    pygame.display.flip()
+    clock.tick(60)
+pygame.quit()
