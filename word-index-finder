@@ -1,0 +1,4 @@
+a = input("Enter a data: ")
+b = input("Enter a word for search: ")
+f = a.find(b)
+print(f)
