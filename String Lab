@@ -1,0 +1,110 @@
+def display_menu():
+    print("\n" + "="*40)
+    print("      Python String Functions Menu")
+    print("="*40)
+    print("1. Find a substring's index (.find())")
+    print("2. Replace a word (.replace())")
+    print("3. Convert to uppercase (.upper())")
+    print("4. Convert to lowercase (.lower())")
+    print("5. Convert to title case (.title())")
+    print("6. Swap letter cases (.swapcase())")
+    print("7. Split the string into a list (.split())")
+    print("8. Join a list of words into a string (.join())")
+    print("9. Check if string starts with a prefix (.startswith())")
+    print("10. Check if string ends with a suffix (.endswith())")
+    print("11. Strip leading/trailing whitespace (.strip())")
+    print("12. Count occurrences of a substring (.count())")
+    print("13. Check if all characters are alphabetic (.isalpha())")
+    print("14. Check if all characters are digits (.isdigit())")
+    print("0. Exit Program")
+    print("="*40)
+
+def main():
+    user_string = input("Please enter a sentence to work with: ")
+
+    while True:
+        display_menu()
+        choice = input("Enter your choice (0-14): ")
+
+        if choice == '0':
+            print("Exiting the program. Goodbye!")
+            break
+        
+        try:
+            if choice == '1':
+                sub = input("Enter the substring to find: ")
+                index = user_string.find(sub)
+                if index != -1:
+                    print(f"'{sub}' found at index: {index}")
+                else:
+                    print(f"'{sub}' was not found.")
+            
+            elif choice == '2':
+                old = input("Enter the word to replace: ")
+                new = input("Enter the new word: ")
+                new_string = user_string.replace(old, new)
+                print(f"Original: {user_string}")
+                print(f"Modified: {new_string}")
+
+            elif choice == '3':
+                print(f"Uppercase: {user_string.upper()}")
+
+            elif choice == '4':
+                print(f"Lowercase: {user_string.lower()}")
+
+            elif choice == '5':
+                print(f"Title Case: {user_string.title()}")
+
+            elif choice == '6':
+                print(f"Swapped Case: {user_string.swapcase()}")
+
+            elif choice == '7':
+                delimiter = input("Enter the delimiter (e.g., space, comma) to split by: ")
+                if not delimiter:
+                    delimiter = ' '
+                parts = user_string.split(delimiter)
+                print(f"Split into a list: {parts}")
+
+            elif choice == '8':
+                words_list_input = input("Enter words separated by a comma (e.g., hello,world): ")
+                words_list = [word.strip() for word in words_list_input.split(',')]
+                separator = input("Enter the separator to join with (e.g., ' ', '-'): ")
+                if not separator:
+                    separator = ' '
+                joined_string = separator.join(words_list)
+                print(f"Joined string: {joined_string}")
+
+            elif choice == '9':
+                prefix = input("Enter the prefix to check for: ")
+                result = user_string.startswith(prefix)
+                print(f"Does the sentence start with '{prefix}'? {result}")
+
+            elif choice == '10':
+                suffix = input("Enter the suffix to check for: ")
+                result = user_string.endswith(suffix)
+                print(f"Does the sentence end with '{suffix}'? {result}")
+
+            elif choice == '11':
+                whitespace_string = input("Enter a string with leading/trailing whitespace: ")
+                print(f"Original: '{whitespace_string}'")
+                print(f"Stripped: '{whitespace_string.strip()}'")
+
+            elif choice == '12':
+                sub = input("Enter the substring to count: ")
+                count = user_string.count(sub)
+                print(f"'{sub}' appears {count} time(s) in the sentence.")
+
+            elif choice == '13':
+                print(f"Are all characters alphabetic? {user_string.isalpha()}")
+
+            elif choice == '14':
+                print(f"Are all characters digits? {user_string.isdigit()}")
+
+            else:
+                print("Invalid choice. Please enter a number from 0 to 14.")
+
+        except Exception as e:
+            print(f"An error occurred: {e}. Please try again.")
+
+if __name__ == "__main__":
+    main()
