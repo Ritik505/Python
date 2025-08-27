@@ -1,0 +1,9 @@
+a = input("Enter a sentence: ")
+b = input("Enter the word you want to replace: ")
+if b not in a:
+    print(f"The word '{b}' was not found in the sentence.")
+else:
+    c = input("Enter the word you want to replace with: ")
+
+    result = a.replace(b, c)
+    print(f"The new sentence is: {result}")
