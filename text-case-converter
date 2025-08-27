@@ -1,0 +1,3 @@
+a = input("Enter a sentence: ")
+c = a.swapcase()
+print(f"Sentence After the Swap case: {c}")
