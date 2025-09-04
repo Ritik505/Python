@@ -1,0 +1,50 @@
+data = input("Enter a series of numbers separated by spaces: ")
+try:
+    nums = [int(num) for num in data.split()]
+except ValueError:
+    print("Invalid input. Please enter numbers only.")
+    nums = []
+
+print("===== THIS IS THE LIST TRAVERSAL =====")
+for num in nums:
+    print(num)
+
+print("===== THIS IS THE LIST SORTED IN DESCENDING ORDER =====")
+nums.sort(reverse=True)
+print(nums)
+
+print("===== APPENDING A NEW NUMBER TO THE LIST =====")
+try:
+    item = int(input("Enter a number to append: "))
+    nums.append(item)
+    print(nums)
+except ValueError:
+    print("Invalid input. No number was appended.")
+    print(nums)
+
+print("===== COUNTING THE ELEMENTS IN THE LIST =====")
+size = len(nums)
+print(f"The total number of elements is: {size}")
+
+# ============ STRING LIST OPERATIONS ============
+print("\n\n===== STRING LIST OPERATIONS =====")
+L1 = input("Enter a series of names separated by spaces: ").split()
+
+print("===== COUNT A NAME =====")
+name_to_count = input("Enter the name you want to count: ")
+print(f"{name_to_count} occurs {L1.count(name_to_count)} times in the list.")
+
+print("===== LOCATION OF A NAME ======")
+name_to_find = input("Enter the name to find its position: ")
+if name_to_find in L1:
+    print(f"{name_to_find} is at index {L1.index(name_to_find)}")
+else:
+    print(f"{name_to_find} not found in the list.")
+
+print("===== DELETE A NAME ======")
+name_to_delete = input("Enter the name you want to delete: ")
+if name_to_delete in L1:
+    L1.remove(name_to_delete)   # removes the first occurrence
+    print(f"{name_to_delete} deleted. Updated list: {L1}")
+else:
+    print(f"{name_to_delete} not found. No deletion done.")
