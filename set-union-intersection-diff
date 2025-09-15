@@ -1,0 +1,20 @@
+s1 = {23, 84, 12, 78, 62, 9756, 23, 79}
+s2 = {84, 28, 90, 12, 37}
+
+print("Given Set 1:")
+print(s1)
+
+print("\nGiven Set 2:")
+print(s2)
+
+print("\nUNION of Set 1 and Set 2:")
+s3 = s1.union(s2)
+print(s3)
+
+print("\nINTERSECTION of Set 1 and Set 2:")
+s4 = s1.intersection(s2)
+print(s4)
+
+print("\nDIFFERENCE (Set 1 - Set 2):")
+s5 = s1.difference(s2)
+print(s5)
