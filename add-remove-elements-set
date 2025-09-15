@@ -1,0 +1,9 @@
+s = {23,56,126,68}
+print("Given Set: ")
+print(s)
+print("=====Add element=====")
+s.add(55)
+print(s)
+print("=====Reomve element===")
+s.remove(56)
+print(s)
