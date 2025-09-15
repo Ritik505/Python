@@ -1,0 +1,20 @@
+d = {
+    "name": "abc",
+    "age": "25",
+    "course": "B.Tech"
+}
+
+print("Initial Dictionary:")
+print(d)
+
+print("\n ADD KEY IN DICTIONARY")
+d["programming_language"] = "Python"
+print(d)
+
+print("\n🗑️ REMOVE KEY FROM DICTIONARY")
+d.pop("age")
+print(d)
+
+print("\n♻️ UPDATE KEY IN DICTIONARY")
+d.update({"programming_language": "JavaScript"})
+print(d)
