@@ -1,0 +1,9 @@
+d = {
+    "name": "abc",
+    "age": "25",
+    "course": "B.Tech"
+}
+
+print("Dictionary Contents (Key-Value Pairs):")
+for key in d:
+    print(f"{key}: {d[key]}")
