@@ -1,0 +1,3 @@
+D = {"First name":"Ritik","Last name":"Verma"}
+D2 = D.copy()
+print(D2)
