@@ -1,0 +1,18 @@
+import numpy as np
+
+# 1. Create 1D array
+a = np.array([1, 2, 3, 4, 5])
+print("1D Array:", a)
+
+# 2. Reshape array (1D → 2D)
+b = a.reshape(1, 5)
+print("Reshaped Array:", b)
+
+# 3. Array Slicing
+s = a[1:4]
+print("Sliced Array:", s)
+
+# 4. Aggregate operations
+print("Sum =", a.sum())
+print("Maximum =", a.max())
+print("Minimum =", a.min())
