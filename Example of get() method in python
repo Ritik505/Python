@@ -1,0 +1,2 @@
+D = {"First name":"Ritik","Last name":"Verma"}
+print(D.get("Last name"))
